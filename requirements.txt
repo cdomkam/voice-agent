@@ -1,0 +1,6 @@
+aiohttp
+requests
+loguru
+pipecat-ai[silero,daily,openai,deepgram]
+higgungface_hub
+vllm
