@@ -4,3 +4,5 @@ loguru
 pipecat-ai[silero,daily,openai,deepgram]
 higgungface_hub
 vllm
+google-auth
+python-dotenv

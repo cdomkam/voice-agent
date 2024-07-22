@@ -30,6 +30,7 @@ from helpers import (
 )
 from cerebrium import get_secret
 from huggingface_hub import login
+from utility import make_a_request
 
 logger.remove(0)
 logger.add(sys.stderr, level="DEBUG")
@@ -62,7 +63,7 @@ def start_server():
 server_process = Process(target=start_server, daemon=True)
 server_process.start()
 
-async def main(room_url: str, token: str):
+async def main(room_url: str, token: str, user_id: str):
     
     async with aiohttp.ClientSession() as session:
         transport = DailyTransport(
@@ -149,7 +150,23 @@ async def main(room_url: str, token: str):
         # When the participant leaves, we exit the bot.
         @transport.event_handler("on_participant_left")
         async def on_participant_left(transport, participant, reason):
+            from conv_parser import ConvParser
+            
+            
             logger.info(messages)
+            parser = ConvParser(message=messages[2:])
+            
+            comments, responses = parser.parse_from_list()
+            
+            function_url = 'https://us-central1-gemini-team.cloudfunctions.net/addConversationBatch'
+
+            data = {
+                "user_id":user_id,
+                "comments":comments,
+                "responses":responses
+            }
+            
+            make_a_request(function_url=function_url, data=data)
             await task.queue_frame(EndFrame())
 
         # If the call is ended make sure we quit as well.
@@ -203,15 +220,30 @@ def check_deepgram_model_status():
         print(f"Error connecting to {ws_url}: {e}")
         return False
 
+def check_user(user_id: str):
 
+    function_url = 'https://us-central1-gemini-team.cloudfunctions.net/userExist'
 
-def start_bot(room_url: str, token: str = None):
+    data = {
+        "user_id":user_id,
+    }
+        
+    userExist = make_a_request(function_url=function_url, data=data)
+    
+    return userExist['data']
+ 
+
+def start_bot(room_url: str, token: str = None, user_id: str | None = None):
 
     def target():
-        asyncio.run(main(room_url, token))
+        asyncio.run(main(room_url, token, user_id))
 
     check_vllm_model_status()
     check_deepgram_model_status()
+    if not check_user(user_id=user_id):
+        logger.info("session finished user not found!!")
+        return {"message": "session finished user not found!!"}
+    
     process = Process(target=target, daemon=True)
     process.start()
     process.join()  # Wait for the process to complete

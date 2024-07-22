@@ -137,7 +137,7 @@ class VADGate(FrameProcessor):
                 return
             else:
                 if isinstance(frame, TextFrame):
-                    logger.error(f"XXXXXXXXXXXXXXXXXXX received a text frame, wasn't expecting it.")
+                    logger.error("XXXXXXXXXXXXXXXXXXX received a text frame, wasn't expecting it.")
 
             if isinstance(frame, AudioRawFrame):
                 # if our buffer is empty or has a "finished" sentence at the end,
