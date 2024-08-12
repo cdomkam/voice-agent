@@ -1,4 +1,4 @@
-import os
+# import os
 # from openai import OpenAI
 
 # os.environ['OPENAI_API_KEY'] = os.environ['OPEN_API_KEY']
@@ -10,11 +10,11 @@ class ConvParser:
         self.message: list[dict] = message
     
     def parse_from_llm(self) -> str:
-        prompt_string = f'''
-        Separate these into two Python arrays based on the role. If the role type doesn't change in the next line, merge the responses in the new arrays. The indices of both arrays should refer to the same comment and response. Here are the data:
+        # prompt_string = f'''
+        # Separate these into two Python arrays based on the role. If the role type doesn't change in the next line, merge the responses in the new arrays. The indices of both arrays should refer to the same comment and response. Here are the data:
         
-        {self.message}
-        '''
+        # {self.message}
+        # '''
         
         # response = client.chat.completions.create(
         #             model="gpt-4-turbo",
@@ -24,7 +24,7 @@ class ConvParser:
         #             ]
         #             )
         # return response.choices[0].message.content
-        NotImplemented
+        raise NotImplemented
         ...
     
     def parse_from_list(self)->tuple[list,list]:

@@ -22,6 +22,8 @@ from pipecat.processors.aggregators.llm_response import (
     LLMAssistantResponseAggregator, LLMUserResponseAggregator
 )
 
+from pipecat_gemini import GeminiLLMService
+
 from helpers import (
     ClearableDeepgramTTSService,
     AudioVolumeTimer,
@@ -95,18 +97,25 @@ async def main(room_url: str, token: str, user_id: str):
             base_url="http://127.0.0.1:8082/v1/speak"
         )
 
-        llm = OpenAILLMService(
-            name="LLM",
-            api_key=get_secret("HF_TOKEN"),
-            # api_key=os.environ.get("HF_TOKEN"),
-            model="NousResearch/Meta-Llama-3-8B-Instruct",
-            base_url="http://127.0.0.1:5000/v1"
-        )
+        # llm = OpenAILLMService(
+        #     name="LLM",
+        #     api_key=get_secret("HF_TOKEN"),
+        #     # api_key=os.environ.get("HF_TOKEN"),
+        #     model="NousResearch/Meta-Llama-3-8B-Instruct",
+        #     base_url="http://127.0.0.1:5000/v1"
+        # )
+        
+        llm = GeminiLLMService(name="LLM",model="gemini-1.5-flash", api_key=os.environ.get('GEMINI_API_KEY'))
+
 
         messages = [
             {
                 "role": "system",
-                "content": "You are a fast, low-latency chatbot. Your goal is to demonstrate voice-driven AI capabilities at human-like speeds. The technology powering you is Daily for transport, Cerebrium for serverless infrastructure, Llama 3 (8-B version) LLM, and Deepgram for speech-to-text and text-to-speech. You are hosted on the east coast of the United States. Respond to what the user said in a creative and helpful way, but keep responses short and legible. Ensure responses contain only words. Check again that you have not included special characters other than '?' or '!'.",
+                "content": '''You are a fast, low-latency chatbot. Your goal is to collect information on what a user has done in a specific role.
+                            be sure to ask questions that allow the user to describe in detail what they did at a specific job and how they did it.
+                            Again keep the conversation focused on one role. Respond to what the user said in a creative and helpful way, 
+                            but keep responses short and legible. Ensure responses contain only words. Check again that you have not included 
+                            special characters other than '?' or '!'.''',
             },
         ]
 
@@ -144,7 +153,7 @@ async def main(room_url: str, token: str, user_id: str):
             # Kick off the conversation.
             time.sleep(1.5)
             messages.append(
-                {"role": "system", "content": "Introduce yourself by saying 'hello, I'm Marvius, how can I help you today?'"})
+                {"role": "system", "content": "Introduce yourself by saying 'hello, I'm Marvius, what job is this conversation for and when did it take place?'"})
             await task.queue_frame(LLMMessagesFrame(messages))
 
         # When the participant leaves, we exit the bot.
